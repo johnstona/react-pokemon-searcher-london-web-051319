@@ -2,7 +2,8 @@ import React from 'react'
 import PokemonCollection from './PokemonCollection'
 import PokemonForm from './PokemonForm'
 import PokemonSearch from './PokemonSearch'
-// import { Search } from 'semantic-ui-react'
+import PokemonFilter from './PokemonFilter'
+import { Search } from 'semantic-ui-react'
 // import _ from 'lodash'
 import API from '../adapters/API';
 
@@ -10,7 +11,8 @@ class PokemonPage extends React.Component {
 
   state = {
     pokemons: [],
-    searchTerm: ''
+    searchTerm: '',
+    filterValue: ''
   }
 
   componentDidMount() {
@@ -27,21 +29,35 @@ class PokemonPage extends React.Component {
     this.setState ({ searchTerm })
   }
 
+  handleSearch = (e) => {
+    this.setState({
+      searchTerm: e.target.value
+    })
+  }
+
   addPokemonFrontend = (pokemon) => {
     this.setState({
       pokemons: [...this.state.pokemons, pokemon]
     })
   }
 
+  updateFilterValue = (filterValue) => {
+    this.setState({ filterValue })
+  }
+
   render() {
 
+    const filterTypes = [...new Set(this.state.pokemons.map(pokemon => pokemon.types[0]))]
     const pokemonsToRender = this.state.pokemons.filter(pokemon => pokemon.name.toLowerCase().includes(this.state.searchTerm.toLowerCase()))
+    const filteredPokemons = this.state.filterValue ? pokemonsToRender.filter(pokemon => pokemon.types.includes(this.state.filterValue)) : pokemonsToRender
+
     return (
       <div>
         <h1>Pokemon Searcher</h1>
         <br />
-        <PokemonSearch search={this.updateSearchTerm}/>
-        <PokemonCollection pokemons={pokemonsToRender} />
+        <PokemonFilter types={filterTypes} update={this.updateFilterValue}/>
+        <Search onSearchChange={this.handleSearch} showNoResults={false}/>
+        <PokemonCollection pokemons={filteredPokemons} />
         <br />
         <PokemonForm newPokemon={this.addPokemon}/>
       </div>
